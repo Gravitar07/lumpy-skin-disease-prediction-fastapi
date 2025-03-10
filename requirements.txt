@@ -1,4 +1,4 @@
-bcrypt
+bcrypt==3.2.0
 fastapi
 fastapi[standard]
 google-generativeai
