@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h1>Dashboard</h1>
+        <p>Welcome, {{ user.username }}! View your prediction history and local disease statistics.</p>
+    </div>
+</div>
+
+<div class="row">
+    {% if city and city_stats %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="card-title mb-0">Local Disease Statistics</h4>
+            </div>
+            <div class="card-body">
+                <h5>{{ city }}</h5>
+                <p class="mb-0">Total cases detected: <strong>{{ city_stats }}</strong></p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="col-md-{% if city and city_stats %}8{% else %}12{% endif %} mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">Your Prediction History</h4>
+            </div>
+            <div class="card-body">
+                {% if predictions %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Image Result</th>
+                                <th>Clinical Result</th>
+                                <th>Location</th>
+                                <th>Language</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prediction in predictions %}
+                            <tr>
+                                <td>{{ prediction.created_at.astimezone().strftime('%Y-%m-%d %H:%M') }} UTC</td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if prediction.image_model_result else 'success' }}">
+                                        {{ 'Affected' if prediction.image_model_result else 'Not Affected' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if prediction.clinical_model_result else 'success' }}">
+                                        {{ 'Affected' if prediction.clinical_model_result else 'Not Affected' }}
+                                    </span>
+                                </td>
+                                <td>{{ prediction.city or 'N/A' }}</td>
+                                <td>{{ prediction.language }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary view-report" 
+                                            data-id="{{ prediction.id }}"
+                                            data-report="{{ prediction.report }}">
+                                        View Report
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>You haven't made any predictions yet.</p>
+                <a href="/home" class="btn btn-primary">Make a Prediction</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Diagnostic Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Basic info in the modal -->
+                <div id="modal-basic-info" class="mb-3"></div>
+                
+                <!-- Markdown report in the modal -->
+                <div class="card">
+                    <div class="card-body markdown-body">
+                        <div id="modal-markdown-report"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/markdown-converter.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View report modal
+    const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+    const basicInfoDiv = document.getElementById('modal-basic-info');
+    const markdownReportDiv = document.getElementById('modal-markdown-report');
+    
+    document.querySelectorAll('.view-report').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const report = this.getAttribute('data-report');
+            
+            // Find the corresponding table row to get prediction details
+            const row = this.closest('tr');
+            const date = row.cells[0].textContent.trim();
+            const imageResult = row.cells[1].textContent.trim();
+            const clinicalResult = row.cells[2].textContent.trim();
+            const location = row.cells[3].textContent.trim();
+            const language = row.cells[4].textContent.trim();
+            
+            // Display basic information
+            basicInfoDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Date:</strong> ${date}</p>
+                            <p><strong>Image Analysis:</strong> ${imageResult}</p>
+                            <p><strong>Clinical Analysis:</strong> ${clinicalResult}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Location:</strong> ${location}</p>
+                            <p><strong>Language:</strong> ${language}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Convert report to markdown and render
+            const markdown = convertToMarkdown(report);
+            markdownReportDiv.innerHTML = marked.parse(markdown);
+            
+            reportModal.show();
+        });
+    });
+});
+</script>
+{% endblock %} 

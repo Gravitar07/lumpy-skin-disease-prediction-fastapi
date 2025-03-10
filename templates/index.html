@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h1 class="text-center">Lumpy Skin Disease Prediction</h1>
+        <p class="text-center">Upload an image and provide clinical data to get a diagnosis</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Prediction Form</h3>
+            </div>
+            <div class="card-body">
+                <form id="prediction-form" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Upload Image</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                                <div class="mt-2">
+                                    <img id="image-preview" class="img-fluid d-none" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="language" class="form-label"><strong>Report Language</strong></label>
+                                <select class="form-select form-select-lg" id="language" name="language">
+                                    <option value="English">English</option>
+                                    
+                                    <!-- North Indian Languages -->
+                                    <optgroup label="North Indian Languages">
+                                        <option value="Hindi">Hindi</option>
+                                        <option value="Punjabi">Punjabi</option>
+                                        <option value="Urdu">Urdu</option>
+                                        <option value="Bengali">Bengali</option>
+                                    </optgroup>
+                                    
+                                    <!-- South Indian Languages -->
+                                    <optgroup label="South Indian Languages">
+                                        <option value="Tamil">Tamil</option>
+                                        <option value="Telugu">Telugu</option>
+                                        <option value="Malayalam">Malayalam</option>
+                                        <option value="Kannada">Kannada</option>
+                                    </optgroup>
+                                    
+                                    <!-- International Languages -->
+                                    <optgroup label="International Languages">
+                                        <option value="Spanish">Spanish</option>
+                                        <option value="French">French</option>
+                                        <option value="Arabic">Arabic</option>
+                                        <option value="Chinese">Chinese</option>
+                                    </optgroup>
+                                </select>
+                                <div class="form-text">Select the language for your diagnostic report</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Location</label>
+                                <div class="d-flex">
+                                    <button type="button" id="get-location" class="btn btn-secondary me-2">
+                                        <i class="bi bi-geo-alt"></i> Get Current Location
+                                    </button>
+                                    <span id="location-status" class="align-self-center"></span>
+                                </div>
+                                <input type="hidden" id="latitude" name="latitude">
+                                <input type="hidden" id="longitude" name="longitude">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weather Data Section -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-info-circle me-2"></i> <strong>Weather Data:</strong> 
+                                        <span id="weather-status">No weather data yet. Click "Get Current Location" to fetch automatically.</span>
+                                    </div>
+                                    <button type="button" id="toggle-weather-fields" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-pencil"></i> Edit Weather Data
+                                    </button>
+                                </div>
+                                
+                                <!-- Weather Data Summary - Initially Hidden -->
+                                <div id="weather-summary" class="mt-3" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Cloud Cover:</span>
+                                                    <span id="cloud-cover-display" class="badge bg-primary"></span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Mean Temperature:</span>
+                                                    <span id="mean-temp-display" class="badge bg-primary"></span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Min/Max Temp:</span>
+                                                    <span id="min-max-temp-display" class="badge bg-primary"></span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Precipitation:</span>
+                                                    <span id="precipitation-display" class="badge bg-primary"></span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Evapotranspiration:</span>
+                                                    <span id="evapotranspiration-display" class="badge bg-primary"></span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Other Values:</span>
+                                                    <span id="other-values-display" class="badge bg-primary"></span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weather Data Fields - Initially Hidden -->
+                    <div id="weather-fields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="cloud_cover" class="form-label">Monthly Cloud Cover</label>
+                                    <input type="number" step="0.01" class="form-control" id="cloud_cover" name="cloud_cover" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="evapotranspiration" class="form-label">Potential EvapoTranspiration</label>
+                                    <input type="number" step="0.01" class="form-control" id="evapotranspiration" name="evapotranspiration" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="precipitation" class="form-label">Precipitation</label>
+                                    <input type="number" step="0.01" class="form-control" id="precipitation" name="precipitation" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="min_temp" class="form-label">Minimum Temperature</label>
+                                    <input type="number" step="0.01" class="form-control" id="min_temp" name="min_temp" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="mean_temp" class="form-label">Mean Temperature</label>
+                                    <input type="number" step="0.01" class="form-control" id="mean_temp" name="mean_temp" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="max_temp" class="form-label">Maximum Temperature</label>
+                                    <input type="number" step="0.01" class="form-control" id="max_temp" name="max_temp" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="vapour_pressure" class="form-label">Vapour Pressure</label>
+                                    <input type="number" step="0.01" class="form-control" id="vapour_pressure" name="vapour_pressure" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="wet_day_freq" class="form-label">Wet Day Frequency</label>
+                                    <input type="number" step="0.01" class="form-control" id="wet_day_freq" name="wet_day_freq" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Predict</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Section (initially hidden) -->
+<div id="results-section" class="row mt-4 d-none">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3 class="card-title mb-0">Diagnostic Report</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- Basic info section -->
+                        <div id="basic-info" class="mb-4"></div>
+                        
+                        <!-- Diagnostic report section -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="mb-0">Detailed Report</h4>
+                            </div>
+                            <div class="card-body markdown-body">
+                                <div id="markdown-report"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass the weather API key from the server to JavaScript
+    const WEATHER_API_KEY = "{{ weather_api_key }}";
+</script>
+<script src="/static/js/location.js"></script>
+<script src="/static/js/markdown-converter.js"></script>
+<script>
+// Document ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded successfully');
+    
+    // Initialize form inputs
+    initializeRequiredFields();
+});
+
+// Initialize form with default values to avoid validation errors
+function initializeRequiredFields() {
+    // Set default values for hidden fields to ensure form validation passes
+    const weatherFields = [
+        'cloud_cover', 'evapotranspiration', 'precipitation', 
+        'min_temp', 'mean_temp', 'max_temp', 
+        'vapour_pressure', 'wet_day_freq'
+    ];
+    
+    weatherFields.forEach(field => {
+        const input = document.getElementById(field);
+        if (input && !input.value) {
+            input.value = '0'; // Default value
+        }
+    });
+}
+
+// Image preview
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('image-preview');
+            preview.src = e.target.result;
+            preview.classList.remove('d-none');
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// Form submission
+document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    // Add clinical data as JSON
+    const clinicalData = {
+        cloud_cover: parseFloat(form.cloud_cover.value),
+        evapotranspiration: parseFloat(form.evapotranspiration.value),
+        precipitation: parseFloat(form.precipitation.value),
+        min_temp: parseFloat(form.min_temp.value),
+        mean_temp: parseFloat(form.mean_temp.value),
+        max_temp: parseFloat(form.max_temp.value),
+        vapour_pressure: parseFloat(form.vapour_pressure.value),
+        wet_day_freq: parseFloat(form.wet_day_freq.value)
+    };
+    
+    formData.append('clinical_data', JSON.stringify(clinicalData));
+    
+    // Show loading state
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+    
+    try {
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Display results
+            const resultsSection = document.getElementById('results-section');
+            const basicInfoDiv = document.getElementById('basic-info');
+            const markdownReportDiv = document.getElementById('markdown-report');
+            
+            resultsSection.classList.remove('d-none');
+            
+            // Display basic information
+            basicInfoDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Image Analysis:</strong> <span class="badge ${data.image_result ? 'bg-danger' : 'bg-success'}">${data.image_result ? 'Affected' : 'Not Affected'}</span></p>
+                            <p><strong>Clinical Analysis:</strong> <span class="badge ${data.clinical_result ? 'bg-danger' : 'bg-success'}">${data.clinical_result ? 'Affected' : 'Not Affected'}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            ${data.city ? `<p><strong>Location:</strong> ${data.city}</p>` : ''}
+                            ${data.temperature ? `<p><strong>Temperature:</strong> ${data.temperature}°C</p>` : ''}
+                            ${data.language ? `<p><strong>Language:</strong> ${data.language}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Convert report to markdown and render
+            const markdown = convertToMarkdown(data.report);
+            markdownReportDiv.innerHTML = marked.parse(markdown);
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            alert(data.detail || 'An error occurred during prediction.');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    } finally {
+        // Reset button state
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+    }
+});
+</script>
+{% endblock %} 
