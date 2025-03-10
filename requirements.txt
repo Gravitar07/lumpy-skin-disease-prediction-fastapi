@@ -13,8 +13,10 @@ python-dotenv
 python-jose
 python-multipart
 requests
+setuptools
 scikit-learn==1.5.2
 scipy
 sqlalchemy
 tensorflow==2.10.0
 uvicorn
+wheel
