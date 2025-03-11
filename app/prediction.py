@@ -122,10 +122,8 @@ def make_prediction(
     language: str = "English"
 ) -> Prediction:
     try:
-        # Remove print statements and add logging
         logger.info("Loading ML and CNN models")
 
-        # Add comments to explain the code
         # Initialize classes
         preprocessor = DataPreprocessor()
         ml_predictor = ML_Model_Predictor()

@@ -2,12 +2,10 @@ import requests
 from typing import Optional, Tuple
 from .config import WEATHER_API_KEY
 
-# Use the API key from config
-API_KEY = WEATHER_API_KEY
 
 def get_temperature_by_coords(lat: float, lon: float) -> Optional[float]:
     """Get current temperature for given coordinates"""
-    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric"
+    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={WEATHER_API_KEY}&units=metric"
     
     try:
         response = requests.get(url)
@@ -21,7 +19,7 @@ def get_temperature_by_coords(lat: float, lon: float) -> Optional[float]:
 
 def get_city_by_coords(lat: float, lon: float) -> Optional[str]:
     """Get city name for given coordinates"""
-    url = f"https://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit=1&appid={API_KEY}"
+    url = f"https://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit=1&appid={WEATHER_API_KEY}"
     
     try:
         response = requests.get(url)

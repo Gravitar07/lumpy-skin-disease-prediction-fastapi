@@ -144,8 +144,10 @@ Format each section clearly with headers and subheaders for easy reading. Use bu
             response = self.model.generate_content(prompt)
             
             if response.text:
+                llm_response = response.text
+                llm_response = llm_response.replace("```markdown", "").replace("```", "")
                 logger.info("Successfully generated LLM report")
-                return response.text
+                return llm_response
             else:
                 logger.error("LLM returned empty response")
                 raise Exception("LLM response is empty")

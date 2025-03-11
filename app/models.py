@@ -19,7 +19,7 @@ class Prediction(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))))
     
     # Location data
     latitude = Column(Float, nullable=True)
@@ -27,7 +27,6 @@ class Prediction(Base):
     city = Column(String, nullable=True)
     temperature = Column(Float, nullable=True)
     
-    # Input features - removed image storage
     image_path = Column(String, nullable=True)  # Kept for backward compatibility, but will be NULL for new entries
     clinical_features = Column(JSON)  # Store as JSON
     

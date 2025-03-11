@@ -14,7 +14,7 @@ from .database import engine, get_db, Base, SessionLocal
 from .models import User
 from .auth import (
     authenticate_user, create_access_token, get_current_user,
-    create_user, UserCreate, Token, ACCESS_TOKEN_EXPIRE_MINUTES, get_password_hash, get_user
+    create_user, UserCreate, Token, ACCESS_TOKEN_EXPIRE_MINUTES, get_user
 )
 from .prediction import (
     make_prediction, get_user_predictions,

@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from app.config import BASE_DIR
 
-# Define base directory and create logs directory
+# Create logs directory
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 
