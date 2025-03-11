@@ -204,7 +204,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         to_encode.update({"exp": expire})
         token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         
-        logger.debug(f"Access token created for user: {data.get('sub')}")
+        logger.info(f"Access token created for user: {data.get('sub')}")
         return token
         
     except Exception as e:
@@ -262,5 +262,5 @@ def get_current_user(
             detail="User account is inactive"
         )
         
-    logger.debug(f"Current user validated: {user.username}")
+    logger.info(f"Current user validated: {user.username}")
     return user 

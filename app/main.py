@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, Form, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
@@ -18,7 +19,7 @@ from .auth import (
 )
 from .prediction import (
     make_prediction, get_user_predictions,
-    get_city_disease_count
+    get_city_disease_count, initialize_models, clear_models
 )
 from datetime import timedelta
 from .config import SECRET_KEY, ALGORITHM, WEATHER_API_KEY
@@ -27,7 +28,26 @@ from app.logger import logger
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Lumpy Skin Disease Prediction")
+# Define lifespan context manager for startup/shutdown events
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Initialize models when the application starts
+    logger.info("Initializing models on application startup")
+    initialize_models()
+    logger.info("Models initialized successfully")
+    
+    yield  # This is where the app runs
+    
+    # Shutdown: Clean up resources when the application is shutting down
+    logger.info("Application shutdown, performing cleanup...")
+    clear_models()
+    logger.info("Models cleared successfully")
+
+# Create the FastAPI application with lifespan
+app = FastAPI(
+    title="Lumpy Skin Disease Prediction",
+    lifespan=lifespan
+)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -82,7 +102,7 @@ async def create_prediction(
     clinical_features = json.loads(clinical_data)
     
     # Log the parsed clinical data
-    logger.debug(f"Parsed clinical data: {clinical_features}")
+    logger.info(f"Parsed clinical data: {clinical_features}")
 
     # Make prediction with image object
     prediction = make_prediction(
@@ -216,4 +236,3 @@ async def get_dashboard_page(request: Request):
     except:
         # If authentication fails, redirect to login page
         return RedirectResponse(url="/", status_code=303)
-
