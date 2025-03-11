@@ -30,7 +30,7 @@ class DataPreprocessor:
         try:
             logger.info("Initializing DataPreprocessor")
             self.scaler = joblib.load(f"{MODELS_DIR}/scaler_object.joblib")
-            logger.debug("Scaler loaded successfully")
+            logger.info("Scaler loaded successfully")
         except Exception as e:
             logger.error("Failed to load scaler", exc_info=True)
             raise ModelLoadingError("Could not load the scaler for data preprocessing.")
@@ -38,7 +38,7 @@ class DataPreprocessor:
     def preprocess(self, input_data):
         """Preprocess input data using the loaded scaler."""
         try:
-            logger.debug(f"Preprocessing input data: {input_data}")
+            logger.info(f"Preprocessing input data: {input_data}")
             scaled_data = self.scaler.transform(np.array(input_data).reshape(1, -1))
             return scaled_data
         except Exception as e:
@@ -111,6 +111,43 @@ class CNN_Model_Predictor:
             logger.error("Error during CNN prediction", exc_info=True)
             raise PredictionError("CNN prediction failed")
 
+# Global variables to store model instances
+_preprocessor = None
+_ml_predictor = None
+_cnn_predictor = None
+_llm = None
+
+def initialize_models():
+    """Initialize and load all models once during application startup"""
+    global _preprocessor, _ml_predictor, _cnn_predictor, _llm
+    
+    try:
+        logger.info("Initializing models on application startup")
+        _preprocessor = DataPreprocessor()
+        _ml_predictor = ML_Model_Predictor()
+        _cnn_predictor = CNN_Model_Predictor()
+        _llm = LLM()
+        logger.info("All models loaded successfully")
+    except Exception as e:
+        logger.error("Failed to load models on startup", exc_info=True)
+        raise ModelLoadingError(f"Could not load models during initialization: {str(e)}")
+    
+def clear_models():
+    """Clear the models from memory"""
+    global _preprocessor, _ml_predictor, _cnn_predictor
+    _preprocessor = None
+    _ml_predictor = None
+    _cnn_predictor = None
+    _llm = None
+
+def get_models():
+    """Get the initialized models"""
+    global _preprocessor, _ml_predictor, _cnn_predictor, _llm
+    
+    if _preprocessor is None or _ml_predictor is None or _cnn_predictor is None or _llm is None:
+        # If models aren't initialized yet, initialize them
+        initialize_models()
+    return _preprocessor, _ml_predictor, _cnn_predictor, _llm
 
 def make_prediction(
     db: Session,
@@ -122,16 +159,9 @@ def make_prediction(
     language: str = "English"
 ) -> Prediction:
     try:
-        logger.info("Loading ML and CNN models")
-
-        # Initialize classes
-        preprocessor = DataPreprocessor()
-        ml_predictor = ML_Model_Predictor()
-        cnn_predictor = CNN_Model_Predictor()
-
-        # Log the initialization of models
-        logger.debug("Models initialized successfully")
-
+        # Get the already initialized models
+        preprocessor, ml_predictor, cnn_predictor, llm = get_models()
+        
         # Get location data if coordinates provided
         city = None
         temperature = None
@@ -186,7 +216,6 @@ def make_prediction(
         """
         
         # Generate LLM report using the LLM class
-        llm = LLM()
         report = llm.inference(image=image, result=result, language=language, temperature=temperature, city=city)
         
         # Create prediction record WITHOUT storing any image data

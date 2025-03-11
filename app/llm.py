@@ -118,7 +118,7 @@ Format each section clearly with headers and subheaders for easy reading. Use bu
         try:
             # Generate prompt using template
             refined_prompt = self.prompt_template(result, language, temperature, city)
-            logger.debug("Generated LLM prompt template")
+            logger.info("Generated LLM prompt template")
             
             # Process image input
             try:
