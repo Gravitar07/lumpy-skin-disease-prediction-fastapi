@@ -97,6 +97,13 @@ IMPORTANT GUIDELINES:
 10. Address both immediate and long-term management strategies
 11. Do not add any additional sections or explanatory text like "Here is the report in {language} language" or anything like that.
 12. Provide the report in markdown format
+13. Use consistent heading levels throughout the report:
+    - For Diagnostic Report heading, use level 1 heading (#)
+    - Main section titles (1-6) should be level 2 headings (##)
+    - Subsection titles (A, B, C under Management Recommendations) should be level 3 headings (###)
+    - Do not use level 1 headings (#) anywhere in the report except for Diagnostic Report heading
+    - Do not use any heading levels beyond level 3 (###)
+14. Ensure all headings follow this exact format with no variations
 
 Format each section clearly with headers and subheaders for easy reading. Use bullet points for lists and recommendations. Highlight critical information using bold text (**important text**)."""
 
