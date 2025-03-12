@@ -97,15 +97,18 @@ class CNN_Model_Predictor:
         try:
             # Preprocess image for model input
             image = image.resize((224, 224))
-            image_array = np.array(image) / 255.0
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            image_array = np.array(image, dtype=np.float32)
             image_array = np.expand_dims(image_array, axis=0)
             image_array = tf.keras.applications.mobilenet_v2.preprocess_input(image_array)
             
             # Make prediction
             prediction = self.model.predict(image_array)
-            result = np.argmax(prediction, axis=1)[0]
-            logger.info(f"CNN Model prediction: {'Lumpy' if result == 0 else 'Not Lumpy'}")
-            return result
+            logger.info(f"CNN Model prediction: {prediction}")
+            predicted_class = 1 if np.argmax(prediction[0]) else 0
+            logger.info(f"CNN Model prediction: {'Lumpy Skin' if predicted_class == 0 else 'Normal Skin'}")
+            return predicted_class
         
         except Exception as e:
             logger.error("Error during CNN prediction", exc_info=True)

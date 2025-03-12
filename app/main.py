@@ -95,6 +95,8 @@ async def create_prediction(
     # Process uploaded image in memory without saving to disk
     image_data = image.file.read()
     
+    logger.info(f"Image file name: {image.filename}")
+
     # Create a PIL Image from the bytes data
     image_obj = Image.open(BytesIO(image_data))
     
