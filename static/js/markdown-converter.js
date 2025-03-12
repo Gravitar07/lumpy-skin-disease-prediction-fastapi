@@ -11,30 +11,19 @@ function convertToMarkdown(reportText) {
   let markdownLines = [];
   
   for (let line of lines) {
+    // Check if the line is already a markdown heading (starts with # symbols)
+    if (line.trim().match(/^#{1,6}\s/)) {
+      // Line is already a proper markdown heading, keep it as is
+      markdownLines.push(line);
+    }
     // Convert section headers (lines starting with ** and ending with **)
-    if (line.trim().startsWith('**') && line.trim().endsWith('**')) {
+    else if (line.trim().startsWith('**') && line.trim().endsWith('**')) {
       // Remove the asterisks
       let heading = line.trim().replace(/^\*\*|\*\*$/g, '');
       
-      // Determine heading level based on content
-      if (heading.includes('Diagnostic Report') || heading.includes('Diagnosebericht')) {
-        // Main title - h1
-        markdownLines.push(`# ${heading}`);
-      } else if (heading.includes('Output') || heading.includes('Observations') || 
-                heading.includes('Analysis') || heading.includes('Precautions') || 
-                heading.includes('Solutions') || heading.includes('Cause') ||
-                heading.includes('Modellvorhersage') || heading.includes('Eingangsdaten')) {
-        // Major sections - h2
-        markdownLines.push(`## ${heading}`);
-      } else {
-        // Subsections - h3
-        markdownLines.push(`### ${heading}`);
-      }
+      // Default to h2 for all converted headings for consistency
+      markdownLines.push(`## ${heading}`);
     } 
-    // Handle lines that start with ##
-    else if (line.trim().startsWith('##')) {
-      markdownLines.push(line); // Already in markdown format
-    }
     // Convert list items (lines starting with *)
     else if (line.trim().startsWith('* ')) {
       markdownLines.push(line); // Already in markdown format
